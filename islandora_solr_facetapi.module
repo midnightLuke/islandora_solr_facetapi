@@ -1,48 +1,10 @@
 <?php
 
 /**
- * Implements hook_menu().
+ * Implements hook_menu_alter().
  */
-function islandora_solr_facetapi_menu() {
-  $items = array();
-
-  $first = TRUE;
-  foreach (facetapi_get_realm_info() as $realm_name => $realm) {
-    if ($first) {
-      $first = FALSE;
-      $items['admin/islandora/search/islandora_solr/facets'] = array(
-        'title'            => 'Facets',
-        'page callback'    => 'drupal_get_form',
-        'page arguments'   =>  array('facetapi_realm_settings_form', 'islandora_solr@searcher', $realm_name),
-        'weight'           => 10,
-        'access arguments' => array('administer facets'),
-        'type'             => MENU_LOCAL_TASK,
-        'context'          => MENU_CONTEXT_PAGE | MENU_CONTEXT_INLINE,
-        'file'             => 'facetapi.admin.inc',
-        'file path'        => drupal_get_path('module', 'facetapi'),
-      );
-      $items['admin/islandora/search/islandora_solr/facets/' . $realm_name] = array(
-        'title'            => $realm['label'],
-        'type'             => MENU_DEFAULT_LOCAL_TASK,
-        'weight'           => $realm['weight'],
-      );
-    }
-    else {
-      $items['admin/islandora/search/islandora_solr/facets/' . $realm_name] = array(
-        'title'            => $realm['label'],
-        'page callback'    => 'drupal_get_form',
-        'page arguments'   => array('facetapi_realm_settings_form', 'islandora_solr@searcher', $realm_name),
-        'access arguments' => array('administer facets'),
-        'type'             => MENU_LOCAL_TASK,
-        'context'          => MENU_CONTEXT_PAGE | MENU_CONTEXT_INLINE,
-        'file'             => 'facetapi.admin.inc',
-        'file path'        => drupal_get_path('module', 'facetapi'),
-        'weight'           => $realm['weight'],
-      );
-    }
-  }
-
-  return $items;
+function islandora_solr_facetapi_menu_alter(&$items) {
+  $items['admin/islandora/search/islandora_solr/facets']['weight'] = 10;
 }
 
 /**
@@ -53,7 +15,8 @@ function islandora_solr_facetapi_facetapi_searcher_info() {
     'islandora_solr@searcher' => array(
       'label' => t('Islandora SOLR Search'),
       'adapter' => 'islandora_solr',
-      'path' => 'admin/islandora/search/islandora_solr/facets',
+      'path' => 'admin/islandora/search/islandora_solr',
+      'types' => array('islandora_solr_index'),
       'supports facet missing' => TRUE,
       'supports facet mincount' => TRUE,
       'include default facets' => TRUE,
@@ -67,8 +30,33 @@ function islandora_solr_facetapi_facetapi_searcher_info() {
 function islandora_solr_facetapi_facetapi_facet_info(array $searcher_info) {
   $facets = array();
 
+  // Facets are usually associated with the type of content stored in the index.
+  if (isset($searcher_info['types']['islandora_solr_index'])) {
+
+    $luke = islandora_solr_get_luke();
+    foreach ($luke['fields'] as $field_name => $field) {
+
+      if ($field['type'] != 'text') {
+        $facets[$field_name] = array(
+          'name' => $field_name,
+          'label' => $field_name,
+          'description' => t('Type: @type', array('@type' => $field['type'], '@schema' => $field['schema'])),
+          'allowed operators' => array(FACETAPI_OPERATOR_AND => TRUE, FACETAPI_OPERATOR_OR => TRUE),
+        );
+
+        switch ($field['type']) {
+          case 'string':
+            $facets[$field_name]['query types'] = array('term');
+            break;
+          case 'date':
+            $facets[$field_name]['query types'] = array('date', 'date_range');
+            break;
+        }
+      }
+    }
+  }
+
   return $facets;
-  // kpm($searcher_info);
 }
 
 /**
