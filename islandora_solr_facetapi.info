@@ -1,0 +1,8 @@
+name = Islandora SOLR Facet API
+description = Integrates the Islandora SOLR API with Drupal's facet API for deeper customization of facets and more facet options.
+core = 7.x
+
+files[] = plugins/facetapi/adapter.inc
+
+dependencies[] = islandora_solr
+dependencies[] = facetapi

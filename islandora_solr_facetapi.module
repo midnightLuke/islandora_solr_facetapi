@@ -1,0 +1,105 @@
+<?php
+
+/**
+ * Implements hook_menu().
+ */
+function islandora_solr_facetapi_menu() {
+  $items = array();
+
+  $first = TRUE;
+  foreach (facetapi_get_realm_info() as $realm_name => $realm) {
+    if ($first) {
+      $first = FALSE;
+      $items['admin/islandora/search/islandora_solr/facets'] = array(
+        'title'            => 'Facets',
+        'page callback'    => 'drupal_get_form',
+        'page arguments'   =>  array('facetapi_realm_settings_form', 'islandora_solr@searcher', $realm_name),
+        'weight'           => 10,
+        'access arguments' => array('administer facets'),
+        'type'             => MENU_LOCAL_TASK,
+        'context'          => MENU_CONTEXT_PAGE | MENU_CONTEXT_INLINE,
+        'file'             => 'facetapi.admin.inc',
+        'file path'        => drupal_get_path('module', 'facetapi'),
+      );
+      $items['admin/islandora/search/islandora_solr/facets/' . $realm_name] = array(
+        'title'            => $realm['label'],
+        'type'             => MENU_DEFAULT_LOCAL_TASK,
+        'weight'           => $realm['weight'],
+      );
+    }
+    else {
+      $items['admin/islandora/search/islandora_solr/facets/' . $realm_name] = array(
+        'title'            => $realm['label'],
+        'page callback'    => 'drupal_get_form',
+        'page arguments'   => array('facetapi_realm_settings_form', 'islandora_solr@searcher', $realm_name),
+        'access arguments' => array('administer facets'),
+        'type'             => MENU_LOCAL_TASK,
+        'context'          => MENU_CONTEXT_PAGE | MENU_CONTEXT_INLINE,
+        'file'             => 'facetapi.admin.inc',
+        'file path'        => drupal_get_path('module', 'facetapi'),
+        'weight'           => $realm['weight'],
+      );
+    }
+  }
+
+  return $items;
+}
+
+/**
+ * Implements hook_facetapi_searcher_info().
+ */
+function islandora_solr_facetapi_facetapi_searcher_info() {
+  return array(
+    'islandora_solr@searcher' => array(
+      'label' => t('Islandora SOLR Search'),
+      'adapter' => 'islandora_solr',
+      'path' => 'admin/islandora/search/islandora_solr/facets',
+      'supports facet missing' => TRUE,
+      'supports facet mincount' => TRUE,
+      'include default facets' => TRUE,
+    ),
+  );
+}
+
+/**
+ * Implements hook_facetapi_facet_info().
+ */
+function islandora_solr_facetapi_facetapi_facet_info(array $searcher_info) {
+  $facets = array();
+
+  return $facets;
+  // kpm($searcher_info);
+}
+
+/**
+ * Implements hook_facetapi_adapters().
+ */
+function islandora_solr_facetapi_facetapi_adapters() {
+  return array(
+    'islandora_solr' => array(
+      'handler' => array(
+        'class' => 'IslandoraSolrFacetapiAdapter',
+      ),
+    ),
+  );
+}
+
+/**
+ * Implements hook_facetapi_query_types().
+ */
+function islandora_solr_facetapi_facetapi_facetapi_query_types() {
+  return array(
+    // 'search_api_term' => array(
+    //   'handler' => array(
+    //     'class' => 'SearchApiFacetapiTerm',
+    //     'adapter' => 'search_api',
+    //   ),
+    // ),
+    // 'search_api_date' => array(
+    //   'handler' => array(
+    //     'class' => 'SearchApiFacetapiDate',
+    //     'adapter' => 'search_api',
+    //   ),
+    // ),
+  );
+}
