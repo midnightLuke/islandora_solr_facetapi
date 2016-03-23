@@ -35,24 +35,12 @@ function islandora_solr_facetapi_facetapi_facet_info(array $searcher_info) {
 
     $luke = islandora_solr_get_luke();
     foreach ($luke['fields'] as $field_name => $field) {
-
-      if ($field['type'] != 'text') {
-        $facets[$field_name] = array(
-          'name' => $field_name,
-          'label' => $field_name,
-          'description' => t('Type: @type', array('@type' => $field['type'], '@schema' => $field['schema'])),
-          'allowed operators' => array(FACETAPI_OPERATOR_AND => TRUE, FACETAPI_OPERATOR_OR => TRUE),
-        );
-
-        switch ($field['type']) {
-          case 'string':
-            $facets[$field_name]['query types'] = array('term');
-            break;
-          case 'date':
-            $facets[$field_name]['query types'] = array('date', 'date_range');
-            break;
-        }
-      }
+      $facets[$field_name] = array(
+        'name' => $field_name,
+        'label' => $field_name,
+        'description' => t('Type: @type', array('@type' => $field['type'], '@schema' => $field['schema'])),
+        'allowed operators' => array(FACETAPI_OPERATOR_AND => TRUE, FACETAPI_OPERATOR_OR => TRUE),
+      );
     }
   }
 
@@ -75,19 +63,29 @@ function islandora_solr_facetapi_facetapi_adapters() {
 /**
  * Implements hook_facetapi_query_types().
  */
-function islandora_solr_facetapi_facetapi_facetapi_query_types() {
+function islandora_solr_facetapi_facetapi_query_types() {
   return array(
-    // 'search_api_term' => array(
+    'islandora_solr_term' => array(
+      'handler' => array(
+        'class' => 'IslandoraSolrFacetapiTerm',
+        'adapter' => 'islandora_solr',
+      ),
+    ),
+    // 'islandora_solr_date' => array(
     //   'handler' => array(
-    //     'class' => 'SearchApiFacetapiTerm',
-    //     'adapter' => 'search_api',
-    //   ),
-    // ),
-    // 'search_api_date' => array(
-    //   'handler' => array(
-    //     'class' => 'SearchApiFacetapiDate',
-    //     'adapter' => 'search_api',
+    //     'class' => 'IslandoraSolrFacetapiDate',
+    //     'adapter' => 'islandora_solr',
     //   ),
     // ),
   );
+}
+
+function islandora_solr_facetapi_islandora_solr_query_alter($query) {
+  // This is the main point of communication between the facet system and the
+  // search back-end - it makes the query respond to active facets.
+  $searcher = 'islandora_solr@searcher';
+  $adapter = facetapi_adapter_load($searcher);
+  if ($adapter) {
+    $adapter->addActiveFilters($query);
+  }
 }
