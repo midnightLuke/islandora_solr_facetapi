@@ -60,7 +60,7 @@ class IslandoraSolrFacetapiTerm extends FacetapiQueryType implements FacetapiQue
           $query->solrParams['fq'][] = $this->facet['field'] . ':' . '[* TO *]';
         }
         elseif (strlen($value)) {
-          $query->solrParams['fq'][] = $this->facet['field'] . ':' . $value;
+          $query->solrParams['fq'][] = $this->facet['field'] . ':"' . $value . '"';
         }
       }
     }
@@ -98,6 +98,15 @@ class IslandoraSolrFacetapiTerm extends FacetapiQueryType implements FacetapiQue
           // Facet missing may return 0 even if mincount is 1.
           if (empty($settings->settings['facet_mincount']) || $count) {
             $build[$value] = array('#count' => $count);
+
+            // We should attempt to replace PID with label.
+            if (isset($settings->settings['replace_pid']) && (bool) $settings->settings['replace_pid']) {
+              $pid = str_replace('info:fedora/', '', $value);
+              try {
+                $object = islandora_object_load($pid);
+                $build[$value]['#markup'] = $object->label;
+              } catch (Exception $e) {}
+            }
           }
         }
       }

@@ -49,10 +49,25 @@ class IslandoraSolrFacetapiAdapter extends FacetapiAdapter {
   public function getSearchPath() {
     global $_islandora_solr_queryclass;
 
-    if (empty($_islandora_solr_queryclass->solrQuery)) {
+    if (empty(trim($_islandora_solr_queryclass->solrQuery))) {
       return 'islandora/search';
     } else {
     return 'islandora/search/' . $_islandora_solr_queryclass->solrQuery;
     }
+  }
+
+  /**
+   * Allows for backend specific overrides to the settings form.
+   *
+   * @see facetapi_facet_display_form()
+   */
+  public function settingsForm(&$form, &$form_state) {
+    $settings = $this->getFacet($form['#facetapi']['facet'])->getSettings()->settings;
+    $form['global']['replace_pid'] = array(
+      '#type' => 'checkbox',
+      '#title' => t('Replace PID with label'),
+      '#description' => t('Attempts to replace PIDs with labels in values.'),
+      '#default_value' => isset($settings['replace_pid']) ? $settings['replace_pid'] : false,
+    );
   }
 }

@@ -2,6 +2,8 @@
 
 /**
  * Implements hook_menu_alter().
+ *
+ * Moves the menu link to the end.
  */
 function islandora_solr_facetapi_menu_alter(&$items) {
   $items['admin/islandora/search/islandora_solr/facets']['weight'] = 10;
@@ -19,7 +21,7 @@ function islandora_solr_facetapi_facetapi_searcher_info() {
       'types' => array('islandora_solr_index'),
       'supports facet missing' => TRUE,
       'supports facet mincount' => TRUE,
-      'include default facets' => TRUE,
+      'include default facets' => FALSE,
     ),
   );
 }
@@ -80,12 +82,29 @@ function islandora_solr_facetapi_facetapi_query_types() {
   );
 }
 
+/**
+ * Attaches facet api to the islandora solr query class.
+ */
 function islandora_solr_facetapi_islandora_solr_query_alter($query) {
-  // This is the main point of communication between the facet system and the
-  // search back-end - it makes the query respond to active facets.
   $searcher = 'islandora_solr@searcher';
   $adapter = facetapi_adapter_load($searcher);
   if ($adapter) {
     $adapter->addActiveFilters($query);
   }
+}
+
+/**
+ * Removes Islandora solr breadcrumbs, which cause duplicates.
+ */
+function islandora_solr_facetapi_islandora_breadcrumbs_alter(&$breadcrumbs, $context, $object = NULL) {
+  $breadcrumbs = array();
+}
+
+/**
+ * Implements hook_form_alter().
+ *
+ * Disable core islandora solr facet settings.
+ */
+function islandora_solr_facetapi_form_islandora_solr_admin_settings_alter(&$form, &$form_state) {
+  $form['islandora_solr_tabs']['facet_settings']['#access'] = false;
 }
