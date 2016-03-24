@@ -178,29 +178,8 @@ class IslandoraSolrFacetapiDate extends FacetapiQueryTypeDate implements Facetap
           $from = $value;
           $to = facetapi_isodate(strtotime($value . $gap));
 
-          $from_date = new DateTime($from);
-          $to_date = new DateTime($to);
-
-          switch(substr($gap, 2)) {
-            case 'YEAR':
-              $markup = $from_date->format('Y');
-              break;
-            case 'MONTH':
-              $markup = $from_date->format('F Y');
-              break;
-            case 'DAY':
-              $markup = $from_date->format('F d, Y');
-              break;
-            case 'HOUR':
-              $markup = $from_date->format('F d, Y g a') . ' to ' . $to_date->format('F d, Y g a');
-              break;
-            case 'MINUTE':
-              $markup = $from_date->format('F d, Y g:i a') . ' to ' . $to_date->format('F d, Y g:i a');
-              break;
-          }
-
           $new_value = '[' . $from . ' TO ' . $to . ']';
-          $build[$new_value] = array('#count' => $count, '#active' => 0, '#markup' => $markup);
+          $build[$new_value] = array('#count' => $count, '#active' => 0);
           if (NULL !== $parent) {
             $build[$parent]['#item_children'][$new_value] = &$build[$new_value];
             $build[$new_value]['#item_parents'][$parent] = $parent;

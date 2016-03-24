@@ -46,7 +46,8 @@ function islandora_solr_facetapi_facetapi_facet_info(array $searcher_info) {
 
       switch ($field['type']) {
         case 'date':
-          $facets[$field_name]['query types'] = array('term', 'date', 'date_range');
+          $facets[$field_name]['query types'] = array('date', 'date_range');
+          $facets[$field_name]['map callback'] = 'facetapi_map_date';
           $facets[$field_name]['min callback'] = 'islandora_solr_facetapi_date_min';
           $facets[$field_name]['max callback'] = 'islandora_solr_facetapi_date_max';
           break;
