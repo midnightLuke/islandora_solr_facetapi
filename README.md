@@ -7,8 +7,8 @@ state, bugs and errors are likely.
 
 ## Introduction
 
-Replaces the core Islandora facets with the Drupal [facet api](https://www.drupal.org/project/facetapi)
-module facets.  These modules are handled in their own UI and are a little more
+Replaces the core Islandora facets with the Drupal [Facet API](https://www.drupal.org/project/facetapi)
+module facets.  These facets are handled in their own UI and are a little more
 customizeable, but are wholly different than the Islandora facets.
 
 ## Requirements
