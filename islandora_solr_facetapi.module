@@ -43,6 +43,17 @@ function islandora_solr_facetapi_facetapi_facet_info(array $searcher_info) {
         'description' => t('Type: @type', array('@type' => $field['type'], '@schema' => $field['schema'])),
         'allowed operators' => array(FACETAPI_OPERATOR_AND => TRUE, FACETAPI_OPERATOR_OR => TRUE),
       );
+
+      switch ($field['type']) {
+        case 'date':
+          $facets[$field_name]['query types'] = array('term', 'date'/*, 'date_range'*/);
+          $facets[$field_name]['min callback'] = 'islandora_solr_facetapi_date_min';
+          $facets[$field_name]['max callback'] = 'islandora_solr_facetapi_date_max';
+          break;
+        case 'integer':
+          // $facets[$field_name]['query types'] = array('term', 'numeric_range');
+          break;
+      }
     }
   }
 
@@ -73,12 +84,24 @@ function islandora_solr_facetapi_facetapi_query_types() {
         'adapter' => 'islandora_solr',
       ),
     ),
-    // 'islandora_solr_date' => array(
-    //   'handler' => array(
-    //     'class' => 'IslandoraSolrFacetapiDate',
-    //     'adapter' => 'islandora_solr',
-    //   ),
-    // ),
+    'islandora_solr_date' => array(
+      'handler' => array(
+        'class' => 'IslandoraSolrFacetapiDate',
+        'adapter' => 'islandora_solr',
+      ),
+    ),
+    'islandora_solr_numeric_range' => array(
+      'handler' => array(
+        'class' => 'IslandoraSolrFacetapiNumericRange',
+        'adapter' => 'islandora_solr',
+      ),
+    ),
+    'islandora_solr_date_range' => array(
+      'handler' => array(
+        'class' => 'IslandoraSolrFacetapiDateRange',
+        'adapter' => 'islandora_solr',
+      ),
+    ),
   );
 }
 
@@ -107,4 +130,12 @@ function islandora_solr_facetapi_islandora_breadcrumbs_alter(&$breadcrumbs, $con
  */
 function islandora_solr_facetapi_form_islandora_solr_admin_settings_alter(&$form, &$form_state) {
   $form['islandora_solr_tabs']['facet_settings']['#access'] = false;
+}
+
+function islandora_solr_facetapi_date_min() {
+  return 1;
+}
+
+function islandora_solr_facetapi_date_max() {
+  return 1577836800;
 }
