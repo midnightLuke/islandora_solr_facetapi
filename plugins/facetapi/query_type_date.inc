@@ -33,7 +33,7 @@ class IslandoraSolrFacetapiDate extends FacetapiQueryTypeDate implements Facetap
       return NULL;
     }
     list($start, $end, $gap) = $date_range;
-    $query->solrParams['facet.date'] = $this->facet['field'];
+    $query->solrParams['facet.date'][] = $this->facet['field'];
     $query->solrParams['f.' . $this->facet['field'] . '.facet.date.start'] = $start;
     $query->solrParams['f.' . $this->facet['field'] . '.facet.date.end'] = $end;
     $query->solrParams['f.' . $this->facet['field'] . '.facet.date.gap'] = $gap;

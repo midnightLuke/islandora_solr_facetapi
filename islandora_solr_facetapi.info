@@ -5,7 +5,6 @@ core = 7.x
 files[] = plugins/facetapi/adapter.inc
 files[] = plugins/facetapi/query_type_date.inc
 files[] = plugins/facetapi/query_type_date_range.inc
-files[] = plugins/facetapi/query_type_numeric_range.inc
 files[] = plugins/facetapi/query_type_term.inc
 
 dependencies[] = islandora_solr

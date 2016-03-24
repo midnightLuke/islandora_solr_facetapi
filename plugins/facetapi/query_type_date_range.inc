@@ -33,14 +33,14 @@ class IslandoraSolrFacetapiDateRange extends FacetapiQueryType implements Faceta
     // We generate the ranges and add them to the facet query to get facet counts.
     foreach (array_merge($ranges, date_facets_default_ranges()) as $range) {
       list($start, $end) = $this->generateRange($range, $this->facet['field']);
-      $query->addParam('facet.query', $this->facet['field'] . ":[$start TO $end]");
+      $query->solrParams['facet.query'][] = $this->facet['field'] . ":[$start TO $end]";
     }
 
     // Generate the date range and add it as a filter.
     if (!empty($active)) {
       $range = $ranges[key($active)];
       list($start, $end) = $this->generateRange($range, $this->facet['field']);
-      $query->addParam('fq', $this->facet['field'] . ":[$start TO $end]");
+      $query->solrParams['fq'][] = $this->facet['field'] . ":[$start TO $end]";
     }
   }
 
@@ -78,10 +78,10 @@ class IslandoraSolrFacetapiDateRange extends FacetapiQueryType implements Faceta
       $upper = "NOW/" . $this->unitDivisor($range['date_range_end_unit']) . $range['date_range_end_op'] . $range['date_range_end_amount'] . $range['date_range_end_unit'] . $s;
     }
 
-    if (!empty($field) && !SolrBaseQuery::validFilterValue($field . ":[$lower TO $upper]")) {
-      $lower = "NOW/DAY";
-      $upper = "NOW/DAY+1DAY";
-    }
+    // if (!empty($field)) {
+    //   $lower = "NOW/DAY";
+    //   $upper = "NOW/DAY+1DAY";
+    // }
 
     return array($lower, $upper);
   }
@@ -98,13 +98,17 @@ class IslandoraSolrFacetapiDateRange extends FacetapiQueryType implements Faceta
     // Build the markup for the date ranges.
     $build = date_facets_get_ranges_render_arrays($ranges);
 
-    if ($response = apachesolr_static_response_cache($this->adapter->getSearcher())) {
+    global $_islandora_solr_queryclass;
+
+    $build = array();
+    if ($response = $_islandora_solr_queryclass->islandoraSolrResult) {
       $facet_global_settings = $this->adapter->getFacet($this->facet)->getSettings();
-      $values = (array) $response->facet_counts->facet_queries;
+      $values = $response['facet_counts']['facet_queries'];
       // Add result counts from the facet queries added in execute().
       foreach ($ranges as $range) {
         list($start, $end) = $this->generateRange($range);
         $build[$range['machine_name']]['#count'] = $values[($this->facet['field'] . ":[$start TO $end]")];
+        $build[$range['machine_name']]['#markup'] = t($range['label']);
       }
       // Unset options with fewer results than the minimum count setting.
       foreach ($build as $name => $item) {
