@@ -78,11 +78,6 @@ class IslandoraSolrFacetapiDateRange extends FacetapiQueryType implements Faceta
       $upper = "NOW/" . $this->unitDivisor($range['date_range_end_unit']) . $range['date_range_end_op'] . $range['date_range_end_amount'] . $range['date_range_end_unit'] . $s;
     }
 
-    // if (!empty($field)) {
-    //   $lower = "NOW/DAY";
-    //   $upper = "NOW/DAY+1DAY";
-    // }
-
     return array($lower, $upper);
   }
 

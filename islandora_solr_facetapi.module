@@ -51,9 +51,6 @@ function islandora_solr_facetapi_facetapi_facet_info(array $searcher_info) {
           $facets[$field_name]['min callback'] = 'islandora_solr_facetapi_date_min';
           $facets[$field_name]['max callback'] = 'islandora_solr_facetapi_date_max';
           break;
-        case 'integer':
-          // $facets[$field_name]['query types'] = array('term', 'numeric_range');
-          break;
       }
     }
   }
@@ -76,6 +73,12 @@ function islandora_solr_facetapi_facetapi_adapters() {
 
 /**
  * Implements hook_facetapi_query_types().
+ *
+ * Provides three basic query types:
+ *
+ * - Term: The standard term facet type.
+ * - Date: Drill-down date facet.
+ * - Date range: For use with the "date facets" module.
  */
 function islandora_solr_facetapi_facetapi_query_types() {
   return array(
@@ -119,7 +122,21 @@ function islandora_solr_facetapi_islandora_breadcrumbs_alter(&$breadcrumbs, $con
 }
 
 /**
- * Implements hook_form_alter().
+ * Minimum date callback for date facets.
+ */
+function islandora_solr_facetapi_date_min() {
+  return 1;
+}
+
+/**
+ * Maximum date callback for date facets.
+ */
+function islandora_solr_facetapi_date_max() {
+  return 1577836800;
+}
+
+/**
+ * Implements hook_form_FORM_ID_alter().
  *
  * Disable core islandora solr facet settings.
  */
@@ -127,10 +144,22 @@ function islandora_solr_facetapi_form_islandora_solr_admin_settings_alter(&$form
   $form['islandora_solr_tabs']['facet_settings']['#access'] = false;
 }
 
-function islandora_solr_facetapi_date_min() {
-  return 1;
+/**
+ * Implements hook_form_FORM_ID_alter().
+ */
+function islandora_solr_facetapi_form_block_admin_display_form_alter(&$form, &$form_state) {
+  unset($form['blocks']['islandora_solr_basic_facets']);
 }
 
-function islandora_solr_facetapi_date_max() {
-  return 1577836800;
+/**
+ * Implements hook_block_list_alter().
+ *
+ * Completely disables the islandora facet block.
+ */
+function islandora_solr_facetapi_block_list_alter(&$blocks) {
+  foreach ($blocks as $key => $block) {
+    if ($block->module == 'islandora_solr' && $block->delta == 'basic_facets') {
+      unset($blocks[$key]);
+    }
+  }
 }
