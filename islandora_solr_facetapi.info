@@ -9,3 +9,4 @@ files[] = plugins/facetapi/query_type_term.inc
 
 dependencies[] = islandora_solr
 dependencies[] = facetapi
+dependencies[] = entity_token
